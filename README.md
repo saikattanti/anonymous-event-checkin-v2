@@ -117,12 +117,12 @@ npm run dev:preprod
 ## 🖼️ Screenshots & Evidence
 
 ### Project Demo & DApp Screenshots
-*(Add your screenshots here)*
-![UI Screenshot 1](screenshot1.png)
+![Dashboard](checkin-ui/public/dashboard.png)
+![Check In](checkin-ui/public/check-in.png)
+![Landing](checkin-ui/public/landing.png)
 
 ### CI/CD Workflow Screenshot
-*(Add your screenshots here)*
-![CI/CD Pipeline Run](screenshot2.png)
+*(Please upload your CI/CD Pipeline screenshot to `checkin-ui/public/` and update this link, or remove this section)*
 
 ---
 
