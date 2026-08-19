@@ -21,7 +21,7 @@ function orNull(v: string | undefined | null): string | null {
 }
 
 function envConfig(): AppConfig {
-  const fallback = import.meta.env.PROD ? 'preview' : 'undeployed';
+  const fallback = 'preprod';
   const rawNetwork = (
     import.meta.env.VITE_NETWORK_ID ??
     import.meta.env.VITE_MIDNIGHT_NETWORK ??
@@ -30,7 +30,9 @@ function envConfig(): AppConfig {
   const network: NetworkId = isNetworkId(rawNetwork) ? rawNetwork : (fallback as NetworkId);
   return {
     network,
-    contractAddress: orNull(import.meta.env.VITE_CONTRACT_ADDRESS),
+    contractAddress:
+      orNull(import.meta.env.VITE_CONTRACT_ADDRESS) ??
+      'da5a5c4b4869a2a2b7d654da1eb9ed63b9788ce6f3b15c92339df57e1113407f',
     indexerUri: orNull(import.meta.env.VITE_INDEXER_URI),
     indexerWsUri: orNull(import.meta.env.VITE_INDEXER_WS_URI),
     proverUri: orNull(
