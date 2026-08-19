@@ -20,6 +20,29 @@ function orNull(v: string | undefined | null): string | null {
   return t.length > 0 ? t : null;
 }
 
+function defaultEndpoints(network: NetworkId) {
+  switch (network) {
+    case 'preprod':
+      return {
+        indexer: 'https://indexer.preprod.midnight.network/api/v4/graphql',
+        indexerWs: 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
+        prover: 'https://proof-server.preprod.midnight.network',
+      };
+    case 'preview':
+      return {
+        indexer: 'https://indexer.preview.midnight.network/api/v4/graphql',
+        indexerWs: 'wss://indexer.preview.midnight.network/api/v4/graphql/ws',
+        prover: 'https://proof-server.preview.midnight.network',
+      };
+    case 'undeployed':
+      return {
+        indexer: 'http://127.0.0.1:8088/api/v4/graphql',
+        indexerWs: 'ws://127.0.0.1:8088/api/v4/graphql/ws',
+        prover: 'http://localhost:6300',
+      };
+  }
+}
+
 function envConfig(): AppConfig {
   const fallback = 'preprod';
   const rawNetwork = (
@@ -28,16 +51,18 @@ function envConfig(): AppConfig {
     fallback
   ).trim();
   const network: NetworkId = isNetworkId(rawNetwork) ? rawNetwork : (fallback as NetworkId);
+  const defaults = defaultEndpoints(network);
+
   return {
     network,
     contractAddress:
       orNull(import.meta.env.VITE_CONTRACT_ADDRESS) ??
       'ed3c0b8bbdc6e2405d1b606dfe38ef7d895ad95c9d7ecd69b68b4c2a0fa5e68b',
-    indexerUri: orNull(import.meta.env.VITE_INDEXER_URI),
-    indexerWsUri: orNull(import.meta.env.VITE_INDEXER_WS_URI),
-    proverUri: orNull(
-      import.meta.env.VITE_PROOF_SERVER_URL ?? import.meta.env.VITE_PROVER_URI,
-    ),
+    indexerUri: orNull(import.meta.env.VITE_INDEXER_URI) ?? defaults.indexer,
+    indexerWsUri: orNull(import.meta.env.VITE_INDEXER_WS_URI) ?? defaults.indexerWs,
+    proverUri:
+      orNull(import.meta.env.VITE_PROOF_SERVER_URL ?? import.meta.env.VITE_PROVER_URI) ??
+      defaults.prover,
   };
 }
 
