@@ -57,7 +57,7 @@ function envConfig(): AppConfig {
     network,
     contractAddress:
       orNull(import.meta.env.VITE_CONTRACT_ADDRESS) ??
-      'ed3c0b8bbdc6e2405d1b606dfe38ef7d895ad95c9d7ecd69b68b4c2a0fa5e68b',
+      'd8bbaaf91a63de2747560ad6f966741ba1a95541f9c9bacee3880bbb7bce19ac',
     indexerUri: orNull(import.meta.env.VITE_INDEXER_URI) ?? defaults.indexer,
     indexerWsUri: orNull(import.meta.env.VITE_INDEXER_WS_URI) ?? defaults.indexerWs,
     proverUri:

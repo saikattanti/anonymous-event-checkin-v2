@@ -42,12 +42,6 @@ function compiledContract() {
 }
 
 function resolveProverUri(prover: string): string {
-  if (
-    typeof window !== 'undefined' &&
-    /proof-server\.(preprod|preview)\.midnight\.network/i.test(prover)
-  ) {
-    return `${window.location.origin}/proof-server`;
-  }
   return prover;
 }
 

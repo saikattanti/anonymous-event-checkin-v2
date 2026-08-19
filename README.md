@@ -53,7 +53,7 @@ The `checkin.compact` smart contract separates data into on-chain public ledger 
 
 | Network | Contract Address / Status | Verification Explorer Link |
 | --- | --- | --- |
-| **Preprod** | `ed3c0b8bbdc6e2405d1b606dfe38ef7d895ad95c9d7ecd69b68b4c2a0fa5e68b` | [🌐 Midnight Explorer](https://preprod.midnightexplorer.com) \| [🌐 1am Explorer](https://explorer.1am.xyz) |
+| **Preprod** | `d8bbaaf91a63de2747560ad6f966741ba1a95541f9c9bacee3880bbb7bce19ac` | [🌐 Midnight Explorer](https://preprod.midnightexplorer.com) \| [🌐 1am Explorer](https://explorer.1am.xyz) |
 
 ---
 
