@@ -60,7 +60,7 @@ function WalletChip() {
   return (
     <div className="flex items-center gap-2">
       <Button size="sm" variant="accent" onClick={() => void connect()} disabled={connecting}>
-        {connecting ? 'Connecting…' : 'Connect Lace'}
+        {connecting ? 'Connecting…' : 'Connect Wallet'}
       </Button>
       {walletError ? (
         <span className="hidden max-w-[160px] truncate text-xs text-[var(--danger)] lg:inline">
@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="scan-lines pointer-events-none fixed inset-0 opacity-60" aria-hidden />
 
       <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--paper)]/95 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 w-full items-center gap-4 px-4 sm:px-8">
           <Link to="/" className="shrink-0 font-display text-lg text-[var(--ink)]">
             AEC<span className="text-[var(--accent)]">.</span>
           </Link>
@@ -144,7 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : null}
 
         <div className="border-t border-[var(--line)] bg-[var(--ink)] text-white">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] sm:px-6">
+          <div className="mx-auto flex w-full flex-wrap items-center gap-x-5 gap-y-1 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] sm:px-8">
             <span className="text-white/55">Network</span>
             <span>{networkLabel(config.network)}</span>
             <span className="text-white/25">|</span>
@@ -158,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="relative mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-7">{children}</main>
+      <main className="relative mx-auto w-full px-4 py-6 sm:px-8 sm:py-7">{children}</main>
     </div>
   );
 }

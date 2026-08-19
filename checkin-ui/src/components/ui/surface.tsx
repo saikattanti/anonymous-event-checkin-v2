@@ -62,8 +62,8 @@ export function Surface({
   return (
     <div
       className={cn(
-        'rounded-[var(--radius)] border border-[var(--line)] bg-[var(--paper)] p-5',
-        accent && 'border-l-[3px] border-l-[var(--accent)]',
+        'rounded-[var(--radius)] border border-[var(--line)] bg-[var(--paper)] p-5 shadow-sm transition-all hover:shadow-md',
+        accent && 'border-l-[4px] border-l-[var(--accent)]',
         className,
       )}
       {...props}

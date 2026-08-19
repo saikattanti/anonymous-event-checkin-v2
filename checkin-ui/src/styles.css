@@ -24,7 +24,7 @@
   --shadow: 0 1px 0 rgba(10, 22, 40, 0.06);
   --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
   --font-body: 'Source Sans 3', 'Segoe UI', sans-serif;
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 }
 
 @theme inline {

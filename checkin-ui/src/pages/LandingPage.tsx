@@ -31,7 +31,7 @@ export function LandingPage() {
                 onClick={() => void connect()}
                 disabled={connecting}
               >
-                {connecting ? 'Connecting…' : 'Connect Lace'}
+                {connecting ? 'Connecting…' : 'Connect Wallet'}
               </Button>
             ) : null}
             <Link

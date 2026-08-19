@@ -63,7 +63,7 @@ export function CheckInPage() {
 
             {!wallet ? (
               <div className="mb-4 border border-dashed border-[var(--line)] bg-[var(--surface)]/60 p-4 text-sm text-[var(--ink-muted)]">
-                Connect Lace to prove and submit the check-in circuit.
+                Connect your wallet to prove and submit the check-in circuit.
                 <div className="mt-3">
                   <Button
                     variant="accent"
@@ -71,7 +71,7 @@ export function CheckInPage() {
                     onClick={() => void connect()}
                     disabled={connecting}
                   >
-                    {connecting ? 'Connecting…' : 'Connect Lace'}
+                    {connecting ? 'Connecting…' : 'Connect Wallet'}
                   </Button>
                 </div>
               </div>
