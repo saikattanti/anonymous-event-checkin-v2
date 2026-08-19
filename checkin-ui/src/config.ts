@@ -32,7 +32,7 @@ function envConfig(): AppConfig {
     network,
     contractAddress:
       orNull(import.meta.env.VITE_CONTRACT_ADDRESS) ??
-      'da5a5c4b4869a2a2b7d654da1eb9ed63b9788ce6f3b15c92339df57e1113407f',
+      'ed3c0b8bbdc6e2405d1b606dfe38ef7d895ad95c9d7ecd69b68b4c2a0fa5e68b',
     indexerUri: orNull(import.meta.env.VITE_INDEXER_URI),
     indexerWsUri: orNull(import.meta.env.VITE_INDEXER_WS_URI),
     proverUri: orNull(
