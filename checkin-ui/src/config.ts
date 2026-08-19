@@ -21,12 +21,17 @@ function orNull(v: string | undefined | null): string | null {
 }
 
 function defaultEndpoints(network: NetworkId) {
+  const isLocal =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
   switch (network) {
     case 'preprod':
       return {
         indexer: 'https://indexer.preprod.midnight.network/api/v4/graphql',
         indexerWs: 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
-        prover: 'https://proof-server.preprod.midnight.network',
+        prover: isLocal
+          ? 'http://127.0.0.1:6300'
+          : 'https://proof-server.preprod.midnight.network',
       };
     case 'preview':
       return {
