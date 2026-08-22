@@ -5,7 +5,7 @@
 [![Compact Language](https://img.shields.io/badge/Language-Compact_0.23-blue.svg)](https://midnight.network)
 [![Tests Passing](https://img.shields.io/badge/Tests-11%2F11_Passing-emerald.svg)](https://github.com/saikattanti/anonymous-event-checkin-v2)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=flat-square&logo=vercel)](https://anonymous-event-checkin.vercel.app/)
-[![Demo Video](https://img.shields.io/badge/Demo_Video-YouTube-FF0000?style=flat-square&logo=youtube)](https://youtu.be/gnPuRBhZtxc)
+[![Demo Video](https://img.shields.io/badge/Demo_Video-YouTube-FF0000?style=flat-square&logo=youtube)](https://youtu.be/2HkwYWYK15I)
 
 > A decentralized, privacy-preserving event check-in and private allowlist access dApp built on Midnight Network. Attendees prove valid invite/ticket possession using Zero-Knowledge proofs without revealing identity, wallet address, or secret credentials.
 
@@ -18,7 +18,7 @@
 | 🌐 **Live Web Application** | [**https://anonymous-event-checkin.vercel.app**](https://anonymous-event-checkin.vercel.app) | Production DApp interface hosted on Vercel |
 | 📜 **Deployed Smart Contract** | [`d8bbaaf91a63de2747560ad6f966741ba1a95541f9c9bacee3880bbb7bce19ac`](https://preprod.midnightexplorer.com/contracts/0xd8bbaaf91a63de2747560ad6f966741ba1a95541f9c9bacee3880bbb7bce19ac) | Anonymous Check-in Contract on Midnight Preprod |
 | 🔍 **Preprod Block Explorer** | [**View Contract on 1am Explorer ↗**](https://explorer.1am.xyz) | Real-time on-chain ledger state and verification |
-| 🎥 **1-Minute Demo Video** | [**Watch DApp Demo on YouTube ↗**](https://youtu.be/gnPuRBhZtxc) | 60-second walkthrough of wallet connect, ZK proving & check-in |
+| 🎥 **1-Minute Demo Video** | [**Watch DApp Demo on YouTube ↗**](https://youtu.be/2HkwYWYK15I) | Walkthrough of multi-network switching, smart contract deploy, ZK proving & check-in |
 | 📄 **Product Proposal** | [PROPOSAL.md](PROPOSAL.md) | Full product proposal, data model & roadmap |
 
 ---
@@ -28,13 +28,13 @@
 | Requirement / Checklist Item | Status | Verification Detail |
 | :--- | :--- | :--- |
 | **Fully Functional Privacy DApp** | ✅ **PASSED** | Dual-state `event-checkin.compact` with public ledger counter & private ZK witness circuit |
-| **Minimum 3 Tests Passing** | ✅ **PASSED (10/10)** | `tests/contract.test.ts` & `tests/network.test.ts` covering circuit logic, ledger transitions, and privacy guarantees |
+| **Minimum 3 Tests Passing** | ✅ **PASSED (11/11)** | `tests/contract.test.ts` & `tests/network.test.ts` covering circuit logic, ledger transitions, and privacy guarantees |
 | **CI/CD Pipeline Running** | ✅ **PASSED** | `.github/workflows/ci.yml` GitHub Actions automated workflow on push/PR |
 | **Approved Idea from Idea List** | ✅ **PASSED** | **Private Allowlist Access & Anonymous Event Check-in** |
 | **Minimum 10 Meaningful Commits** | ✅ **PASSED** | 30+ structured git commits on `main` branch |
 | **Public GitHub Repository & README** | ✅ **PASSED** | [https://github.com/saikattanti/anonymous-event-checkin-v2](https://github.com/saikattanti/anonymous-event-checkin-v2) |
 | **Live Demo / Local Launch Link** | ✅ **PASSED** | Vercel production deployment + local dev server (`npm run dev:preprod`) |
-| **Demo Video (1 Minute)** | ✅ **PASSED** | 🎥 [Watch Demo Video on YouTube](https://youtu.be/gnPuRBhZtxc) |
+| **Demo Video (1 Minute)** | ✅ **PASSED** | 🎥 [Watch Demo Video on YouTube](https://youtu.be/2HkwYWYK15I) |
 | **README Privacy Model Section** | ✅ **PASSED** | Complete breakdown of what observers can and cannot learn |
 
 ---
