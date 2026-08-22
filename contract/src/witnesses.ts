@@ -1,7 +1,16 @@
-/** Private state for event-checkin — vacant (no witnesses). */
+/**
+ * Private witness definitions for Anonymous Event Check-in (Midnight Network)
+ * Level 3 Production Smart Contract
+ */
 
-export type CheckInPrivateState = Record<string, never>;
+export interface CheckInPrivateState {
+  readonly localAttendeeSecret?: string;
+  readonly lastProofTimestamp?: number;
+}
 
-export const createCheckInPrivateState = (): CheckInPrivateState => ({});
+export const createCheckInPrivateState = (secret?: string): CheckInPrivateState => ({
+  localAttendeeSecret: secret,
+  lastProofTimestamp: Date.now(),
+});
 
 export const witnesses = {};

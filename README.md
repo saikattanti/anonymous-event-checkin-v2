@@ -3,7 +3,7 @@
 [![CI/CD Pipeline](https://github.com/saikattanti/anonymous-event-checkin-v2/actions/workflows/ci.yml/badge.svg)](https://github.com/saikattanti/anonymous-event-checkin-v2/actions/workflows/ci.yml)
 [![Midnight Network](https://img.shields.io/badge/Network-Midnight_Preprod-6b21a8.svg)](https://preprod.midnightexplorer.com)
 [![Compact Language](https://img.shields.io/badge/Language-Compact_0.23-blue.svg)](https://midnight.network)
-[![Tests Passing](https://img.shields.io/badge/Tests-10%2F10_Passing-emerald.svg)](https://github.com/saikattanti/anonymous-event-checkin-v2)
+[![Tests Passing](https://img.shields.io/badge/Tests-11%2F11_Passing-emerald.svg)](https://github.com/saikattanti/anonymous-event-checkin-v2)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=flat-square&logo=vercel)](https://anonymous-event-checkin.vercel.app/)
 [![Demo Video](https://img.shields.io/badge/Demo_Video-YouTube-FF0000?style=flat-square&logo=youtube)](https://youtu.be/gnPuRBhZtxc)
 
@@ -185,28 +185,29 @@ npm run dev:preprod
 
 ---
 
-## 🧪 Automated Test Suite Output (10/10 Passing)
+## 🧪 Automated Test Suite Output (11/11 Passing)
 
 ```text
 > anonymous-event-checkin@1.0.0 test
 > node --import tsx --test tests/*.test.ts
 
-✔ compiled with the expected Compact compiler version (2.15ms)
-✔ public ledger exposes only eventName and checkInCount (2.61ms)
-✔ checkIn circuit takes an opaque secret and produces a proof (0.93ms)
-✔ no witnesses are declared (nothing private is persisted off-secret) (0.67ms)
-✔ isNetworkId accepts known networks and rejects others (0.69ms)
-✔ resolveNetwork honors the --network flag (1.29ms)
-✔ resolveNetwork defaults to undeployed with no flag or state (0.69ms)
-✔ resolveNetwork applies environment endpoint overrides (0.45ms)
-✔ seed is generated once per network then reused (persistence round-trip) (4.25ms)
-✔ deployment records round-trip through the state file (4.89ms)
+✔ compiled with the expected Compact compiler version (0.31.1) (1.00ms)
+✔ public ledger exposes only eventName and checkInCount (0.85ms)
+✔ checkIn circuit takes an opaque secret and produces a ZK proof (0.34ms)
+✔ privacy model: attendee secret is never exposed in ledger storage (0.88ms)
+✔ no external witnesses leak unshielded credentials (0.29ms)
+✔ isNetworkId accepts known networks and rejects others (1.29ms)
+✔ resolveNetwork honors the --network flag (0.85ms)
+✔ resolveNetwork defaults to undeployed with no flag or state (0.71ms)
+✔ resolveNetwork applies environment endpoint overrides (0.44ms)
+✔ seed is generated once per network then reused (persistence round-trip) (3.80ms)
+✔ deployment records round-trip through the state file (5.07ms)
 
-ℹ tests 10
+ℹ tests 11
 ℹ suites 0
-ℹ pass 10
+ℹ pass 11
 ℹ fail 0
-ℹ duration_ms 499.44
+ℹ duration_ms 269.50
 ```
 
 ---
