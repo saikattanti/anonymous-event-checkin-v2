@@ -8,7 +8,13 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { loadConfig, saveContractAddressOverride, type AppConfig } from './config';
+import {
+  loadConfig,
+  saveContractAddressOverride,
+  saveNetworkOverride,
+  type AppConfig,
+  type NetworkId,
+} from './config';
 import { pushActivity } from './lib/activity';
 import {
   connectLace,
@@ -44,6 +50,7 @@ type WalletContextValue = {
   refreshPublicState: () => Promise<void>;
   setContractAddress: (address: string) => void;
   clearContractAddressOverride: () => void;
+  setNetwork: (network: NetworkId) => void;
 };
 
 const WalletContext = createContext<WalletContextValue | null>(null);
@@ -208,6 +215,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (config.contractAddress && haveIndexer) void refreshPublicState();
   }, [config.contractAddress, config.indexerUri, wallet, refreshPublicState]);
 
+  const setNetwork = useCallback((net: NetworkId) => {
+    saveNetworkOverride(net);
+    setConfig(loadConfig());
+    setWallet(null);
+    pushActivity('settings_update', `Switched network to ${net}`);
+  }, []);
+
   const value = useMemo(
     () => ({
       config,
@@ -228,6 +242,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       refreshPublicState,
       setContractAddress,
       clearContractAddressOverride,
+      setNetwork,
     }),
     [
       config,
@@ -247,6 +262,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       refreshPublicState,
       setContractAddress,
       clearContractAddressOverride,
+      setNetwork,
     ],
   );
 

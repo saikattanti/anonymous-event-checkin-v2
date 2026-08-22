@@ -2,6 +2,7 @@ export type NetworkId = 'undeployed' | 'preview' | 'preprod';
 
 const NETWORK_IDS: readonly NetworkId[] = ['undeployed', 'preview', 'preprod'];
 export const CONTRACT_OVERRIDE_KEY = 'aec:contract-address';
+export const NETWORK_OVERRIDE_KEY = 'aec:network-override';
 
 function isNetworkId(v: string): v is NetworkId {
   return (NETWORK_IDS as readonly string[]).includes(v);
@@ -20,7 +21,7 @@ function orNull(v: string | undefined | null): string | null {
   return t.length > 0 ? t : null;
 }
 
-function defaultEndpoints(network: NetworkId) {
+export function defaultEndpoints(network: NetworkId) {
   const isLocal =
     typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
@@ -37,7 +38,9 @@ function defaultEndpoints(network: NetworkId) {
       return {
         indexer: 'https://indexer.preview.midnight.network/api/v4/graphql',
         indexerWs: 'wss://indexer.preview.midnight.network/api/v4/graphql/ws',
-        prover: 'https://proof-server.preview.midnight.network',
+        prover: isLocal
+          ? 'http://127.0.0.1:6300'
+          : 'https://proof-server.preview.midnight.network',
       };
     case 'undeployed':
       return {
@@ -48,9 +51,20 @@ function defaultEndpoints(network: NetworkId) {
   }
 }
 
+function readNetworkOverride(): NetworkId | null {
+  try {
+    const stored = localStorage.getItem(NETWORK_OVERRIDE_KEY);
+    if (stored && isNetworkId(stored)) return stored;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function envConfig(): AppConfig {
   const fallback = 'preprod';
   const rawNetwork = (
+    readNetworkOverride() ??
     import.meta.env.VITE_NETWORK_ID ??
     import.meta.env.VITE_MIDNIGHT_NETWORK ??
     fallback
@@ -94,6 +108,11 @@ export function saveContractAddressOverride(address: string | null) {
   window.dispatchEvent(new CustomEvent('aec:config'));
 }
 
+export function saveNetworkOverride(network: NetworkId) {
+  localStorage.setItem(NETWORK_OVERRIDE_KEY, network);
+  window.dispatchEvent(new CustomEvent('aec:config'));
+}
+
 export function networkLabel(n: NetworkId): string {
   switch (n) {
     case 'undeployed':
@@ -103,4 +122,30 @@ export function networkLabel(n: NetworkId): string {
     case 'preprod':
       return 'Preprod testnet';
   }
+}
+
+export function getMidnightContractExplorerUrl(address: string, network: NetworkId = 'preprod'): string {
+  const clean = address.replace(/^0x/i, '').trim();
+  if (network === 'preview') {
+    return `https://preview.midnightexplorer.com/contracts/0x${clean}`;
+  }
+  return `https://preprod.midnightexplorer.com/contracts/0x${clean}`;
+}
+
+export function get1amContractExplorerUrl(address: string): string {
+  const clean = address.replace(/^0x/i, '').trim();
+  return `https://explorer.1am.xyz/contract/${clean}`;
+}
+
+export function getMidnightTxExplorerUrl(txId: string, network: NetworkId = 'preprod'): string {
+  const clean = txId.replace(/^0x/i, '').trim();
+  if (network === 'preview') {
+    return `https://preview.midnightexplorer.com/transactions/0x${clean}`;
+  }
+  return `https://preprod.midnightexplorer.com/transactions/0x${clean}`;
+}
+
+export function get1amTxExplorerUrl(txId: string): string {
+  const clean = txId.replace(/^0x/i, '').trim();
+  return `https://explorer.1am.xyz/tx/${clean}`;
 }

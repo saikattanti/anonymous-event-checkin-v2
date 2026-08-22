@@ -1,11 +1,15 @@
 import { useState, type ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ExternalLink } from 'lucide-react';
 import { cn, shortAddr } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/surface';
 import { useWallet } from '@/wallet-context';
-import { networkLabel } from '@/config';
+import {
+  networkLabel,
+  getMidnightContractExplorerUrl,
+  get1amContractExplorerUrl,
+} from '@/config';
 
 const NAV = [
   { href: '/dashboard', label: 'Overview' },
@@ -38,7 +42,7 @@ function WalletChip() {
         rel="noreferrer"
         className="text-xs font-semibold text-[var(--accent-deep)] underline-offset-2 hover:underline"
       >
-        Install Lace
+        Install 1AM / Lace
       </a>
     );
   }
@@ -72,7 +76,7 @@ function WalletChip() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { config } = useWallet();
+  const { config, setNetwork } = useWallet();
   const [open, setOpen] = useState(false);
 
   return (
@@ -105,6 +109,34 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
+            {/* Interactive Network Selector in Header */}
+            <div className="hidden items-center rounded-full border border-[var(--line)] bg-[var(--surface-muted)] p-0.5 sm:flex">
+              <button
+                type="button"
+                onClick={() => setNetwork('preprod')}
+                className={cn(
+                  'rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold transition-all',
+                  config.network === 'preprod'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-[var(--ink-muted)] hover:text-white',
+                )}
+              >
+                Preprod
+              </button>
+              <button
+                type="button"
+                onClick={() => setNetwork('preview')}
+                className={cn(
+                  'rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold transition-all',
+                  config.network === 'preview'
+                    ? 'bg-sky-600 text-white shadow-sm'
+                    : 'text-[var(--ink-muted)] hover:text-white',
+                )}
+              >
+                Preview
+              </button>
+            </div>
+
             <Badge tone="accent" className="hidden sm:inline-flex">
               ZK
             </Badge>
@@ -121,7 +153,42 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {open ? (
           <nav className="border-t border-[var(--line)] px-4 py-3 md:hidden">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
+                <span className="text-xs font-semibold text-[var(--ink-muted)]">Target Network:</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNetwork('preprod');
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      'rounded-md px-2 py-1 text-xs font-semibold',
+                      config.network === 'preprod'
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-[var(--surface)] text-[var(--ink-muted)]',
+                    )}
+                  >
+                    Preprod
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNetwork('preview');
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      'rounded-md px-2 py-1 text-xs font-semibold',
+                      config.network === 'preview'
+                        ? 'bg-sky-600 text-white'
+                        : 'bg-[var(--surface)] text-[var(--ink-muted)]',
+                    )}
+                  >
+                    Preview
+                  </button>
+                </div>
+              </div>
               {NAV.map((item) => (
                 <NavLink
                   key={item.href}
@@ -129,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      'rounded-[var(--radius)] px-3 py-2.5 text-sm font-semibold',
+                      'rounded-[var(--radius)] px-3 py-2 text-sm font-semibold',
                       isActive
                         ? 'bg-[var(--ink)] text-white'
                         : 'text-[var(--ink-muted)] hover:bg-[var(--surface)]',
@@ -144,16 +211,39 @@ export function AppShell({ children }: { children: ReactNode }) {
         ) : null}
 
         <div className="border-t border-[var(--line)] bg-[var(--ink)] text-white">
-          <div className="mx-auto flex w-full flex-wrap items-center gap-x-5 gap-y-1 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] sm:px-8">
-            <span className="text-white/55">Network</span>
-            <span>{networkLabel(config.network)}</span>
-            <span className="text-white/25">|</span>
-            <span className="text-white/55">Contract</span>
-            <span className="truncate">
-              {config.contractAddress
-                ? `${config.contractAddress.slice(0, 10)}…${config.contractAddress.slice(-6)}`
-                : 'unset'}
-            </span>
+          <div className="mx-auto flex w-full flex-wrap items-center justify-between gap-x-5 gap-y-1 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] sm:px-8">
+            <div className="flex items-center gap-2">
+              <span className="text-white/55">Network:</span>
+              <span className="font-semibold text-white">{networkLabel(config.network)}</span>
+              <span className="text-white/25">|</span>
+              <span className="text-white/55">Contract:</span>
+              <span className="truncate">
+                {config.contractAddress
+                  ? `${config.contractAddress.slice(0, 8)}…${config.contractAddress.slice(-6)}`
+                  : 'unset'}
+              </span>
+            </div>
+
+            {config.contractAddress ? (
+              <div className="flex items-center gap-3 text-[9px]">
+                <a
+                  href={getMidnightContractExplorerUrl(config.contractAddress, config.network)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 text-purple-300 hover:text-white"
+                >
+                  <ExternalLink className="h-2.5 w-2.5" /> Midnight Explorer
+                </a>
+                <a
+                  href={get1amContractExplorerUrl(config.contractAddress)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 text-sky-300 hover:text-white"
+                >
+                  <ExternalLink className="h-2.5 w-2.5" /> 1AM Explorer
+                </a>
+              </div>
+            ) : null}
           </div>
         </div>
       </header>

@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
-import { RefreshCw, ArrowUpRight } from 'lucide-react';
+import { RefreshCw, ArrowUpRight, ExternalLink } from 'lucide-react';
 import { PageHeader, Surface, Badge } from '@/components/ui/surface';
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/wallet-context';
-import { networkLabel } from '@/config';
+import {
+  networkLabel,
+  getMidnightContractExplorerUrl,
+  get1amContractExplorerUrl,
+} from '@/config';
 import { shortAddr } from '@/lib/utils';
 
 export function DashboardPage() {
@@ -18,19 +22,19 @@ export function DashboardPage() {
     laceInstalled,
   } = useWallet();
 
-  const walletLabel = wallet ? 'Live' : connecting ? 'Connecting' : 'Offline';
+  const walletLabel = wallet ? 'Connected' : connecting ? 'Connecting' : 'Offline';
   const walletHint = wallet
     ? shortAddr(wallet.state.address, 12, 6)
     : laceInstalled
-      ? 'Lace detected'
-      : 'Lace missing';
+      ? '1AM / Lace detected'
+      : '1AM / Lace missing';
 
   return (
     <div>
       <PageHeader
         kicker="Overview"
         title="Event desk"
-        description="Live status for anonymous door check-ins."
+        description={`Live status and real-time attendance tally on ${networkLabel(config.network)}.`}
         action={
           <Button
             variant="outline"
@@ -51,7 +55,7 @@ export function DashboardPage() {
             { label: 'Wallet', value: walletLabel, hint: walletHint },
             { label: 'Event', value: publicState?.eventName ?? '—' },
             {
-              label: 'Check-ins',
+              label: 'Verified Check-ins',
               value: publicState ? publicState.checkInCount.toString() : '—',
             },
           ].map((item) => (
@@ -84,18 +88,21 @@ export function DashboardPage() {
               <Badge tone="accent">Circuit</Badge>
             </div>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-[var(--ink-muted)]">
-              Submit an invite secret. ZK proves attendance; only the public count changes.
+              Submit an invite secret. ZK proves attendance; only the public count changes on-chain.
             </p>
             <Link
               to="/check-in"
-              className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[var(--accent-deep)] hover:underline"
+              className="mt-5 inline-flex items-center gap-1.5 rounded-[var(--radius)] bg-[var(--ink)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--accent)]"
             >
-              Go to door <ArrowUpRight className="h-3.5 w-3.5" />
+              Go to door <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
 
           <div className="p-5">
-            <h2 className="font-display text-xl">Contract</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="font-display text-xl">Contract Deployment</h2>
+              <Badge tone="ok">{networkLabel(config.network)}</Badge>
+            </div>
             <dl className="mt-3 space-y-3">
               <div>
                 <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
@@ -105,21 +112,35 @@ export function DashboardPage() {
                   {config.contractAddress ?? 'Not set — open Config'}
                 </dd>
               </div>
-              <div>
-                <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
-                  Prover
-                </dt>
-                <dd className="mt-1 break-all font-mono text-xs text-[var(--ink)]">
-                  {config.proverUri ?? 'Wallet default'}
-                </dd>
-              </div>
             </dl>
-            <Link
-              to="/settings"
-              className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[var(--accent-deep)] hover:underline"
-            >
-              Open config <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
+
+            {config.contractAddress ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href={getMidnightContractExplorerUrl(config.contractAddress, config.network)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--line)]"
+                >
+                  <ExternalLink className="h-3 w-3 text-purple-400" /> Midnight Explorer
+                </a>
+                <a
+                  href={get1amContractExplorerUrl(config.contractAddress)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded border border-[var(--line)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] hover:bg-[var(--line)]"
+                >
+                  <ExternalLink className="h-3 w-3 text-sky-400" /> 1AM Explorer
+                </a>
+              </div>
+            ) : (
+              <Link
+                to="/settings"
+                className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[var(--accent-deep)] hover:underline"
+              >
+                Open config <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            )}
           </div>
         </div>
       </Surface>

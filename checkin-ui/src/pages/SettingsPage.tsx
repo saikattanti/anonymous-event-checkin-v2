@@ -9,11 +9,17 @@ import {
   Layers,
   Globe,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { PageHeader, Surface, Badge } from '@/components/ui/surface';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWallet } from '@/wallet-context';
-import { loadConfig, networkLabel } from '@/config';
+import {
+  loadConfig,
+  networkLabel,
+  getMidnightContractExplorerUrl,
+  get1amContractExplorerUrl,
+} from '@/config';
 import { LACE_STORE_URL } from '@/lace';
 
 export function SettingsPage() {
@@ -32,6 +38,7 @@ export function SettingsPage() {
     refreshPublicState,
     setContractAddress,
     clearContractAddressOverride,
+    setNetwork,
   } = useWallet();
 
   const [addressDraft, setAddressDraft] = useState(config.contractAddress ?? '');
@@ -85,14 +92,6 @@ export function SettingsPage() {
     }
   };
 
-  const getExplorerUrl = (address: string) => {
-    const clean = address.replace(/^0x/i, '');
-    if (config.network === 'preview') {
-      return `https://preview.midnightexplorer.com/contracts/0x${clean}`;
-    }
-    return `https://preprod.midnightexplorer.com/contracts/0x${clean}`;
-  };
-
   const isSaveDisabled =
     !addressDraft.trim() || addressDraft.trim() === (config.contractAddress ?? '').trim();
 
@@ -101,7 +100,7 @@ export function SettingsPage() {
       <PageHeader
         kicker="Config"
         title="Workspace setup"
-        description={`Deploy on ${networkLabel(config.network)}, manage contract address, and inspect network endpoints.`}
+        description={`Deploy on ${networkLabel(config.network)}, switch networks, and manage contract configuration.`}
       />
 
       <div className="grid gap-3 lg:grid-cols-2">
@@ -217,36 +216,44 @@ export function SettingsPage() {
           {config.contractAddress ? (
             <div className="mt-4 rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-3">
               <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--ink-muted)]">
-                <span>ACTIVE DEPLOYMENT</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(config.contractAddress!, false)}
-                    className="flex items-center gap-1 text-[var(--accent)] hover:underline"
-                  >
-                    {copiedActive ? (
-                      <>
-                        <Check className="h-3 w-3" /> Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3 w-3" /> Copy
-                      </>
-                    )}
-                  </button>
-                  <a
-                    href={getExplorerUrl(config.contractAddress)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1 text-[var(--ink-muted)] hover:text-white"
-                  >
-                    <ExternalLink className="h-3 w-3" /> Explorer
-                  </a>
-                </div>
+                <span>ACTIVE CONTRACT</span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(config.contractAddress!, false)}
+                  className="flex items-center gap-1 text-[var(--accent)] hover:underline"
+                >
+                  {copiedActive ? (
+                    <>
+                      <Check className="h-3 w-3" /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3" /> Copy
+                    </>
+                  )}
+                </button>
               </div>
               <p className="mt-1.5 break-all font-mono text-xs text-white">
                 {config.contractAddress}
               </p>
+              <div className="mt-2.5 flex flex-wrap gap-2 pt-2 border-t border-[var(--line)]">
+                <a
+                  href={getMidnightContractExplorerUrl(config.contractAddress, config.network)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded bg-purple-950/60 border border-purple-800/60 px-2 py-1 text-[11px] font-medium text-purple-200 hover:bg-purple-900/60"
+                >
+                  <ExternalLink className="h-3 w-3" /> View on Midnight Explorer
+                </a>
+                <a
+                  href={get1amContractExplorerUrl(config.contractAddress)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 rounded bg-sky-950/60 border border-sky-800/60 px-2 py-1 text-[11px] font-medium text-sky-200 hover:bg-sky-900/60"
+                >
+                  <ExternalLink className="h-3 w-3" /> View on 1AM Explorer
+                </a>
+              </div>
             </div>
           ) : (
             <p className="mt-4 font-mono text-[11px] text-[var(--danger)]">
@@ -255,16 +262,48 @@ export function SettingsPage() {
           )}
         </Surface>
 
-        {/* Environment Endpoints */}
+        {/* Network & Environment Card */}
         <Surface>
-          <h2 className="flex items-center gap-2 font-display text-2xl">
-            <Globe className="h-5 w-5 text-[var(--accent)]" />
-            Environment
-          </h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 font-display text-2xl">
+              <Globe className="h-5 w-5 text-[var(--accent)]" />
+              Network & Endpoints
+            </h2>
+            <div className="flex items-center rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] p-1">
+              <button
+                type="button"
+                onClick={() => setNetwork('preprod')}
+                className={cn(
+                  'rounded-md px-3 py-1 text-xs font-semibold transition-all',
+                  config.network === 'preprod'
+                    ? 'bg-purple-600 text-white shadow'
+                    : 'text-[var(--ink-muted)] hover:text-white',
+                )}
+              >
+                Preprod
+              </button>
+              <button
+                type="button"
+                onClick={() => setNetwork('preview')}
+                className={cn(
+                  'rounded-md px-3 py-1 text-xs font-semibold transition-all',
+                  config.network === 'preview'
+                    ? 'bg-sky-600 text-white shadow'
+                    : 'text-[var(--ink-muted)] hover:text-white',
+                )}
+              >
+                Preview
+              </button>
+            </div>
+          </div>
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">
+            Switch between <strong>Preprod</strong> and <strong>Preview</strong> testnets instantly.
+            Wallet and endpoints reconfigure automatically.
+          </p>
           <dl className="mt-5 space-y-4 text-sm">
             <div className="flex items-start justify-between gap-4 border-b border-[var(--line)] pb-3">
               <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
-                Network
+                Active Network
               </dt>
               <dd className="font-semibold text-white">{networkLabel(config.network)}</dd>
             </div>
@@ -322,7 +361,7 @@ export function SettingsPage() {
             <div className="mt-5 flex flex-wrap gap-2">
               {laceInstalled ? (
                 <Button variant="accent" onClick={() => void connect()} disabled={connecting}>
-                  {connecting ? 'Connecting…' : 'Connect wallet'}
+                  {connecting ? 'Connecting…' : `Connect on ${networkLabel(config.network)}`}
                 </Button>
               ) : (
                 <a
@@ -351,12 +390,12 @@ export function SettingsPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-display text-2xl text-white">Contract Deployed!</h3>
-                  <Badge tone="ok">Preprod</Badge>
+                  <Badge tone="ok">{networkLabel(config.network)}</Badge>
                 </div>
                 <p className="mt-1 text-sm text-[var(--ink-muted)]">
                   Your smart contract for{' '}
                   <strong className="text-white">"{deployedModal.eventName}"</strong> has been
-                  finalized on Midnight Preprod.
+                  finalized on {networkLabel(config.network)}.
                 </p>
               </div>
             </div>
@@ -385,15 +424,27 @@ export function SettingsPage() {
               </p>
             </div>
 
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+            {/* Dual Explorer Links in Modal */}
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <a
-                href={getExplorerUrl(deployedModal.address)}
+                href={getMidnightContractExplorerUrl(deployedModal.address, config.network)}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--line)]"
+                className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius)] border border-purple-800/60 bg-purple-950/50 px-3 py-2 text-xs font-semibold text-purple-200 hover:bg-purple-900/60"
               >
-                <ExternalLink className="h-4 w-4" /> View on Midnight Explorer
+                <ExternalLink className="h-3.5 w-3.5" /> View on Midnight Explorer
               </a>
+              <a
+                href={get1amContractExplorerUrl(deployedModal.address)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius)] border border-sky-800/60 bg-sky-950/50 px-3 py-2 text-xs font-semibold text-sky-200 hover:bg-sky-900/60"
+              >
+                <ExternalLink className="h-3.5 w-3.5" /> View on 1AM Explorer
+              </a>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
               <Button
                 variant="accent"
                 onClick={() => {

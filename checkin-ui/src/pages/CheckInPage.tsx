@@ -1,9 +1,14 @@
 import { FormEvent, useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle2, ExternalLink, Copy, Check } from 'lucide-react';
 import { PageHeader, Surface, Badge } from '@/components/ui/surface';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWallet } from '@/wallet-context';
+import {
+  networkLabel,
+  getMidnightTxExplorerUrl,
+  get1amTxExplorerUrl,
+} from '@/config';
 import { pushActivity } from '@/lib/activity';
 
 type Status =
@@ -20,6 +25,7 @@ export function CheckInPage() {
   const { config, wallet, connect, connecting, publicState, refreshPublicState } = useWallet();
   const [secret, setSecret] = useState('');
   const [showSecret, setShowSecret] = useState(false);
+  const [copiedTx, setCopiedTx] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
   const handleCheckIn = async (e: FormEvent) => {
@@ -41,6 +47,16 @@ export function CheckInPage() {
     }
   };
 
+  const copyTx = async (txId: string) => {
+    try {
+      await navigator.clipboard.writeText(txId);
+      setCopiedTx(true);
+      setTimeout(() => setCopiedTx(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
   const disabled = wallet === null || !config.contractAddress || status.kind === 'submitting';
 
   return (
@@ -48,7 +64,7 @@ export function CheckInPage() {
       <PageHeader
         kicker="Door"
         title="Check in anonymously"
-        description="Prove invite possession without revealing who you are."
+        description={`Prove invite possession on ${networkLabel(config.network)} without revealing who you are.`}
       />
 
       <Surface className="!p-0 overflow-hidden">
@@ -71,7 +87,7 @@ export function CheckInPage() {
                     onClick={() => void connect()}
                     disabled={connecting}
                   >
-                    {connecting ? 'Connecting…' : 'Connect Wallet'}
+                    {connecting ? 'Connecting…' : `Connect on ${networkLabel(config.network)}`}
                   </Button>
                 </div>
               </div>
@@ -91,7 +107,7 @@ export function CheckInPage() {
                     type={showSecret ? 'text' : 'password'}
                     value={secret}
                     onChange={(e) => setSecret(e.target.value)}
-                    placeholder="badge-code-…"
+                    placeholder="e.g. VIP-INVITE-2026 or attendee-hash-…"
                     autoComplete="off"
                     disabled={status.kind === 'submitting'}
                   />
@@ -107,39 +123,94 @@ export function CheckInPage() {
                 </div>
               </div>
               <Button type="submit" variant="accent" disabled={disabled || !secret.trim()}>
-                {status.kind === 'submitting' ? 'Proving…' : 'Submit check-in'}
+                {status.kind === 'submitting' ? 'Proving with ZK…' : 'Submit check-in'}
               </Button>
             </form>
 
             {!config.contractAddress ? (
               <p className="mt-4 text-sm text-[var(--warn)]">
-                Contract address missing — set it under Config.
+                Contract address missing — configure or deploy one in Config.
               </p>
             ) : null}
+
+            {/* Check-In Success Card with Dual Explorer Links */}
             {status.kind === 'success' ? (
-              <p className="mt-4 font-mono text-sm text-[var(--ok)]">
-                OK · tx {status.txId.slice(0, 16)}… · block {status.blockHeight}
-              </p>
+              <div className="mt-5 rounded-lg border border-emerald-500/40 bg-emerald-950/30 p-4 animate-in fade-in">
+                <div className="flex items-center gap-2.5 text-emerald-400">
+                  <CheckCircle2 className="h-5 w-5 shrink-0" />
+                  <span className="font-semibold text-sm text-white">
+                    Check-in Verified On-Chain!
+                  </span>
+                  <Badge tone="ok" className="ml-auto">
+                    Block #{status.blockHeight}
+                  </Badge>
+                </div>
+
+                <div className="mt-3 rounded border border-[var(--line)] bg-black/40 p-2.5">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[var(--ink-muted)]">
+                    <span>TRANSACTION HASH</span>
+                    <button
+                      type="button"
+                      onClick={() => copyTx(status.txId)}
+                      className="flex items-center gap-1 text-[var(--accent)] hover:underline"
+                    >
+                      {copiedTx ? (
+                        <>
+                          <Check className="h-3 w-3" /> Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" /> Copy Hash
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-1 break-all font-mono text-xs text-white">{status.txId}</p>
+                </div>
+
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <a
+                    href={getMidnightTxExplorerUrl(status.txId, config.network)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded border border-purple-800/60 bg-purple-950/60 px-3 py-1.5 text-xs font-semibold text-purple-200 hover:bg-purple-900/60"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> View on Midnight Explorer
+                  </a>
+                  <a
+                    href={get1amTxExplorerUrl(status.txId)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded border border-sky-800/60 bg-sky-950/60 px-3 py-1.5 text-xs font-semibold text-sky-200 hover:bg-sky-900/60"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> View on 1AM Explorer
+                  </a>
+                </div>
+              </div>
             ) : null}
+
             {status.kind === 'error' ? (
-              <p className="mt-4 text-sm text-[var(--danger)]">{status.message}</p>
+              <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/30 p-3 text-xs text-[var(--danger)]">
+                <p className="font-semibold">Check-in Error:</p>
+                <p className="mt-1 font-mono">{status.message}</p>
+              </div>
             ) : null}
           </div>
 
           <div className="bg-[var(--ink)] p-5 text-white sm:p-6">
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-cyan-200/80">
-              Public ledger
+              Public ledger state
             </p>
             <dl className="mt-6 space-y-5">
               <div>
                 <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
-                  Event
+                  Event Title
                 </dt>
                 <dd className="mt-1 font-display text-2xl">{publicState?.eventName ?? '—'}</dd>
               </div>
               <div>
                 <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/40">
-                  Count
+                  Verified Check-ins
                 </dt>
                 <dd className="mt-1 font-display text-5xl tabular-nums">
                   {publicState ? publicState.checkInCount.toString() : '—'}
@@ -147,8 +218,10 @@ export function CheckInPage() {
               </div>
             </dl>
             <div className="mt-8 border-t border-white/15 pt-4 text-sm text-white/60">
-              <p className="font-semibold text-white">Never public</p>
-              <p className="mt-1">Invite secret · Attendee identity</p>
+              <p className="font-semibold text-white">Zero-Knowledge Guarantee</p>
+              <p className="mt-1">
+                Your invite secret & wallet identity are never revealed to the public ledger.
+              </p>
             </div>
           </div>
         </div>

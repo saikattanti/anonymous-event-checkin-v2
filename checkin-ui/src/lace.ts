@@ -195,6 +195,23 @@ export async function connectLace(networkId: string = 'undeployed'): Promise<Con
       connected.getConfiguration(),
       connected.getShieldedAddresses(),
     ]);
+
+    const walletNet = String(uris.networkId ?? status?.networkId ?? '').toLowerCase().trim();
+    if (walletNet && networkId !== 'undeployed') {
+      const isPreprod = walletNet.includes('preprod');
+      const isPreview = walletNet.includes('preview');
+      if (networkId === 'preprod' && isPreview && !isPreprod) {
+        throw new Error(
+          'Network Mismatch: Your 1AM/Lace wallet is set to Preview, but the DApp is on Preprod. Please switch your wallet network to Preprod or toggle the DApp header to Preview.',
+        );
+      }
+      if (networkId === 'preview' && isPreprod && !isPreview) {
+        throw new Error(
+          'Network Mismatch: Your 1AM/Lace wallet is set to Preprod, but the DApp is on Preview. Please switch your wallet network to Preview or toggle the DApp header to Preprod.',
+        );
+      }
+    }
+
     const state: WalletState = {
       address: shielded.shieldedAddress,
       coinPublicKey: shielded.shieldedCoinPublicKey,
