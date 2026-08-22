@@ -194,9 +194,25 @@ export async function submitCheckIn(
 
   const tx = await (
     deployed as unknown as {
-      callTx: { checkIn(secret: string): Promise<{ public: { txId: string; blockHeight: number } }> };
+      callTx: {
+        checkIn(
+          secret: string,
+        ): Promise<{
+          public: {
+            txHash?: string;
+            txId?: string;
+            blockHeight?: number;
+            blockHash?: string;
+          };
+        }>;
+      };
     }
   ).callTx.checkIn(inviteSecret);
 
-  return { txId: tx.public.txId, blockHeight: tx.public.blockHeight };
+  const txData = tx.public;
+  const hash = txData.txHash ?? txData.txId ?? '';
+  const height = txData.blockHeight ?? 0;
+
+  return { txId: hash, blockHeight: height };
 }
+

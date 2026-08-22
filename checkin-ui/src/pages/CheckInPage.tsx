@@ -1,5 +1,15 @@
 import { FormEvent, useState } from 'react';
-import { Eye, EyeOff, CheckCircle2, ExternalLink, Copy, Check } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  ExternalLink,
+  Copy,
+  Check,
+  Info,
+  Layers,
+  Box,
+} from 'lucide-react';
 import { PageHeader, Surface, Badge } from '@/components/ui/surface';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +18,8 @@ import {
   networkLabel,
   getMidnightTxExplorerUrl,
   get1amTxExplorerUrl,
+  getMidnightBlockExplorerUrl,
+  getMidnightContractExplorerUrl,
 } from '@/config';
 import { pushActivity } from '@/lib/activity';
 
@@ -71,14 +83,14 @@ export function CheckInPage() {
         <div className="grid lg:grid-cols-[1.4fr_0.9fr]">
           <div className="border-b border-[var(--line)] p-5 sm:p-6 lg:border-b-0 lg:border-r">
             <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="font-display text-xl">Invite proof</h2>
+              <h2 className="font-display text-xl text-[var(--ink)]">Invite proof</h2>
               <Badge tone={wallet ? 'ok' : 'warn'}>
                 {wallet ? 'Wallet live' : 'Wallet needed'}
               </Badge>
             </div>
 
             {!wallet ? (
-              <div className="mb-4 border border-dashed border-[var(--line)] bg-[var(--surface)]/60 p-4 text-sm text-[var(--ink-muted)]">
+              <div className="mb-4 rounded-xl border border-dashed border-[var(--line)] bg-[var(--surface-muted)] p-4 text-sm text-[var(--ink-muted)]">
                 Connect your wallet to prove and submit the check-in circuit.
                 <div className="mt-3">
                   <Button
@@ -133,64 +145,99 @@ export function CheckInPage() {
               </p>
             ) : null}
 
-            {/* Check-In Success Card with Dual Explorer Links */}
+            {/* Check-In Success Card with Rich Verification Explorer Links */}
             {status.kind === 'success' ? (
-              <div className="mt-5 rounded-lg border border-emerald-500/40 bg-emerald-950/30 p-4 animate-in fade-in">
-                <div className="flex items-center gap-2.5 text-emerald-400">
+              <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 animate-in fade-in">
+                <div className="flex items-center gap-2.5 text-emerald-700">
                   <CheckCircle2 className="h-5 w-5 shrink-0" />
-                  <span className="font-semibold text-sm text-white">
+                  <span className="font-semibold text-sm text-slate-900">
                     Check-in Verified On-Chain!
                   </span>
-                  <Badge tone="ok" className="ml-auto">
-                    Block #{status.blockHeight}
-                  </Badge>
+                  {status.blockHeight > 0 ? (
+                    <Badge tone="ok" className="ml-auto">
+                      Block #{status.blockHeight}
+                    </Badge>
+                  ) : null}
                 </div>
 
-                <div className="mt-3 rounded border border-[var(--line)] bg-black/40 p-2.5">
+                <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
                   <div className="flex items-center justify-between text-[10px] font-mono text-[var(--ink-muted)]">
-                    <span>TRANSACTION HASH</span>
+                    <span>TRANSACTION IDENTIFIER</span>
                     <button
                       type="button"
                       onClick={() => copyTx(status.txId)}
-                      className="flex items-center gap-1 text-[var(--accent)] hover:underline"
+                      className="flex items-center gap-1 text-[var(--accent-deep)] font-semibold hover:underline"
                     >
                       {copiedTx ? (
                         <>
-                          <Check className="h-3 w-3" /> Copied
+                          <Check className="h-3.5 w-3.5" /> Copied
                         </>
                       ) : (
                         <>
-                          <Copy className="h-3 w-3" /> Copy Hash
+                          <Copy className="h-3.5 w-3.5" /> Copy ID
                         </>
                       )}
                     </button>
                   </div>
-                  <p className="mt-1 break-all font-mono text-xs text-white">{status.txId}</p>
+                  <p className="mt-1 break-all font-mono text-xs font-semibold text-slate-900">
+                    {status.txId}
+                  </p>
                 </div>
 
-                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="mt-3.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <a
                     href={getMidnightTxExplorerUrl(status.txId, config.network)}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 rounded border border-purple-800/60 bg-purple-950/60 px-3 py-1.5 text-xs font-semibold text-purple-200 hover:bg-purple-900/60"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
                   >
                     <ExternalLink className="h-3.5 w-3.5" /> View on Midnight Explorer
                   </a>
                   <a
-                    href={get1amTxExplorerUrl(status.txId)}
+                    href={get1amTxExplorerUrl(status.txId, config.network)}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 rounded border border-sky-800/60 bg-sky-950/60 px-3 py-1.5 text-xs font-semibold text-sky-200 hover:bg-sky-900/60"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-100 transition-colors"
                   >
                     <ExternalLink className="h-3.5 w-3.5" /> View on 1AM Explorer
                   </a>
+                </div>
+
+                {config.contractAddress ? (
+                  <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <a
+                      href={getMidnightContractExplorerUrl(config.contractAddress, config.network)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      <Layers className="h-3.5 w-3.5 text-purple-600" /> View Contract Activity
+                    </a>
+                    {status.blockHeight > 0 ? (
+                      <a
+                        href={getMidnightBlockExplorerUrl(status.blockHeight, config.network)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                      >
+                        <Box className="h-3.5 w-3.5 text-sky-600" /> View Block #{status.blockHeight}
+                      </a>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                <div className="mt-3 flex items-start gap-1.5 text-[11px] text-slate-500">
+                  <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                  <span>
+                    Note: Block explorers index new ZK proof transactions within 15–30 seconds after
+                    block finalization. The on-chain check-in tally updates immediately on the contract.
+                  </span>
                 </div>
               </div>
             ) : null}
 
             {status.kind === 'error' ? (
-              <div className="mt-4 rounded-lg border border-red-500/40 bg-red-950/30 p-3 text-xs text-[var(--danger)]">
+              <div className="mt-4 rounded-xl border border-red-200 bg-red-50/80 p-4 text-xs text-red-700">
                 <p className="font-semibold">Check-in Error:</p>
                 <p className="mt-1 font-mono">{status.message}</p>
               </div>

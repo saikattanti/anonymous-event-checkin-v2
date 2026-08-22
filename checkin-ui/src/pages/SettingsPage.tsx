@@ -107,7 +107,7 @@ export function SettingsPage() {
         {/* Deploy Card */}
         <Surface accent>
           <div className="flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 font-display text-2xl">
+            <h2 className="flex items-center gap-2 font-display text-2xl text-[var(--ink)]">
               <Rocket className="h-5 w-5 text-[var(--accent)]" />
               Deploy event contract
             </h2>
@@ -164,7 +164,7 @@ export function SettingsPage() {
         {/* Contract Address Card */}
         <Surface>
           <div className="flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 font-display text-2xl">
+            <h2 className="flex items-center gap-2 font-display text-2xl text-[var(--ink)]">
               <Layers className="h-5 w-5 text-[var(--accent)]" />
               Contract address
             </h2>
@@ -214,44 +214,44 @@ export function SettingsPage() {
           </form>
 
           {config.contractAddress ? (
-            <div className="mt-4 rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-3">
+            <div className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-3.5">
               <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--ink-muted)]">
                 <span>ACTIVE CONTRACT</span>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(config.contractAddress!, false)}
-                  className="flex items-center gap-1 text-[var(--accent)] hover:underline"
+                  className="flex items-center gap-1 text-[var(--accent-deep)] font-semibold hover:underline"
                 >
                   {copiedActive ? (
                     <>
-                      <Check className="h-3 w-3" /> Copied
+                      <Check className="h-3.5 w-3.5" /> Copied
                     </>
                   ) : (
                     <>
-                      <Copy className="h-3 w-3" /> Copy
+                      <Copy className="h-3.5 w-3.5" /> Copy
                     </>
                   )}
                 </button>
               </div>
-              <p className="mt-1.5 break-all font-mono text-xs text-white">
+              <p className="mt-1.5 break-all font-mono text-xs font-semibold text-[var(--ink)]">
                 {config.contractAddress}
               </p>
-              <div className="mt-2.5 flex flex-wrap gap-2 pt-2 border-t border-[var(--line)]">
+              <div className="mt-3 flex flex-wrap gap-2 pt-2.5 border-t border-[var(--line)]">
                 <a
                   href={getMidnightContractExplorerUrl(config.contractAddress, config.network)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded bg-purple-950/60 border border-purple-800/60 px-2 py-1 text-[11px] font-medium text-purple-200 hover:bg-purple-900/60"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
                 >
-                  <ExternalLink className="h-3 w-3" /> View on Midnight Explorer
+                  <ExternalLink className="h-3.5 w-3.5" /> View on Midnight Explorer
                 </a>
                 <a
-                  href={get1amContractExplorerUrl(config.contractAddress)}
+                  href={get1amContractExplorerUrl(config.contractAddress, config.network)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 rounded bg-sky-950/60 border border-sky-800/60 px-2 py-1 text-[11px] font-medium text-sky-200 hover:bg-sky-900/60"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-xs font-semibold text-sky-700 hover:bg-sky-100 transition-colors"
                 >
-                  <ExternalLink className="h-3 w-3" /> View on 1AM Explorer
+                  <ExternalLink className="h-3.5 w-3.5" /> View on 1AM Explorer
                 </a>
               </div>
             </div>
@@ -265,7 +265,7 @@ export function SettingsPage() {
         {/* Network & Environment Card */}
         <Surface>
           <div className="flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 font-display text-2xl">
+            <h2 className="flex items-center gap-2 font-display text-2xl text-[var(--ink)]">
               <Globe className="h-5 w-5 text-[var(--accent)]" />
               Network & Endpoints
             </h2>
@@ -277,7 +277,7 @@ export function SettingsPage() {
                   'rounded-md px-3 py-1 text-xs font-semibold transition-all',
                   config.network === 'preprod'
                     ? 'bg-purple-600 text-white shadow'
-                    : 'text-[var(--ink-muted)] hover:text-white',
+                    : 'text-[var(--ink-muted)] hover:text-[var(--ink)]',
                 )}
               >
                 Preprod
@@ -289,7 +289,7 @@ export function SettingsPage() {
                   'rounded-md px-3 py-1 text-xs font-semibold transition-all',
                   config.network === 'preview'
                     ? 'bg-sky-600 text-white shadow'
-                    : 'text-[var(--ink-muted)] hover:text-white',
+                    : 'text-[var(--ink-muted)] hover:text-[var(--ink)]',
                 )}
               >
                 Preview
@@ -305,7 +305,7 @@ export function SettingsPage() {
               <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
                 Active Network
               </dt>
-              <dd className="font-semibold text-white">{networkLabel(config.network)}</dd>
+              <dd className="font-semibold text-[var(--ink)]">{networkLabel(config.network)}</dd>
             </div>
             <div className="flex items-start justify-between gap-4 border-b border-[var(--line)] pb-3">
               <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
@@ -329,7 +329,7 @@ export function SettingsPage() {
         {/* Wallet Connection */}
         <Surface>
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-2xl">Midnight wallet</h2>
+            <h2 className="font-display text-2xl text-[var(--ink)]">Midnight wallet</h2>
             <Badge tone={wallet ? 'ok' : laceInstalled ? 'warn' : 'danger'}>
               {wallet ? 'Connected' : laceInstalled ? 'Detected' : 'Not Found'}
             </Badge>
@@ -340,11 +340,11 @@ export function SettingsPage() {
           </p>
           {wallet ? (
             <div className="mt-5 space-y-3">
-              <div className="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-3">
+              <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-muted)] p-3.5">
                 <span className="text-[10px] font-semibold text-[var(--ink-muted)] uppercase">
                   Shielded Address
                 </span>
-                <p className="mt-1 break-all font-mono text-xs text-white">
+                <p className="mt-1 break-all font-mono text-xs font-semibold text-[var(--ink)]">
                   {wallet.state.address}
                 </p>
               </div>
@@ -379,34 +379,34 @@ export function SettingsPage() {
         </Surface>
       </div>
 
-      {/* Deployment Success Confirmation Modal */}
+      {/* Deployment Success Confirmation Modal (Perfect Light Theme) */}
       {deployedModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="relative w-full max-w-lg rounded-xl border border-[var(--accent)]/50 bg-[var(--surface)] p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="relative w-full max-w-lg rounded-2xl border border-[var(--line)] bg-white p-6 sm:p-7 shadow-2xl">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-2xl text-white">Contract Deployed!</h3>
+                  <h3 className="font-display text-2xl text-[var(--ink)]">Contract Deployed!</h3>
                   <Badge tone="ok">{networkLabel(config.network)}</Badge>
                 </div>
                 <p className="mt-1 text-sm text-[var(--ink-muted)]">
                   Your smart contract for{' '}
-                  <strong className="text-white">"{deployedModal.eventName}"</strong> has been
+                  <strong className="text-[var(--ink)]">"{deployedModal.eventName}"</strong> has been
                   finalized on {networkLabel(config.network)}.
                 </p>
               </div>
             </div>
 
-            <div className="mt-5 space-y-3 rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] p-4">
+            <div className="mt-5 space-y-2 rounded-xl border border-[var(--line)] bg-slate-50 p-4">
               <div className="flex items-center justify-between text-xs font-semibold text-[var(--ink-muted)]">
                 <span>NEW CONTRACT ADDRESS</span>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(deployedModal.address, true)}
-                  className="flex items-center gap-1 text-[var(--accent)] hover:underline"
+                  className="flex items-center gap-1 text-[var(--accent-deep)] font-semibold hover:underline"
                 >
                   {copiedDeployed ? (
                     <>
@@ -419,7 +419,7 @@ export function SettingsPage() {
                   )}
                 </button>
               </div>
-              <p className="break-all font-mono text-xs font-medium text-white">
+              <p className="break-all font-mono text-xs font-semibold text-[var(--ink)]">
                 {deployedModal.address}
               </p>
             </div>
@@ -430,15 +430,15 @@ export function SettingsPage() {
                 href={getMidnightContractExplorerUrl(deployedModal.address, config.network)}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius)] border border-purple-800/60 bg-purple-950/50 px-3 py-2 text-xs font-semibold text-purple-200 hover:bg-purple-900/60"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3.5 py-2 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
               >
                 <ExternalLink className="h-3.5 w-3.5" /> View on Midnight Explorer
               </a>
               <a
-                href={get1amContractExplorerUrl(deployedModal.address)}
+                href={get1amContractExplorerUrl(deployedModal.address, config.network)}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius)] border border-sky-800/60 bg-sky-950/50 px-3 py-2 text-xs font-semibold text-sky-200 hover:bg-sky-900/60"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50 px-3.5 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-100 transition-colors"
               >
                 <ExternalLink className="h-3.5 w-3.5" /> View on 1AM Explorer
               </a>

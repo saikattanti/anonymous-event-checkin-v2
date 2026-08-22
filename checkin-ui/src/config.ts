@@ -126,26 +126,35 @@ export function networkLabel(n: NetworkId): string {
 
 export function getMidnightContractExplorerUrl(address: string, network: NetworkId = 'preprod'): string {
   const clean = address.replace(/^0x/i, '').trim();
-  if (network === 'preview') {
-    return `https://preview.midnightexplorer.com/contracts/0x${clean}`;
-  }
-  return `https://preprod.midnightexplorer.com/contracts/0x${clean}`;
+  const domain = network === 'preview' ? 'preview.midnightexplorer.com' : 'preprod.midnightexplorer.com';
+  return `https://${domain}/contracts/${clean}`;
 }
 
-export function get1amContractExplorerUrl(address: string): string {
+export function get1amContractExplorerUrl(address: string, network: NetworkId = 'preprod'): string {
   const clean = address.replace(/^0x/i, '').trim();
-  return `https://explorer.1am.xyz/contract/${clean}`;
+  const netQuery = network === 'preview' ? '?network=preview' : '?network=preprod';
+  return `https://explorer.1am.xyz/contract/${clean}${netQuery}`;
 }
 
 export function getMidnightTxExplorerUrl(txId: string, network: NetworkId = 'preprod'): string {
   const clean = txId.replace(/^0x/i, '').trim();
-  if (network === 'preview') {
-    return `https://preview.midnightexplorer.com/transactions/0x${clean}`;
-  }
-  return `https://preprod.midnightexplorer.com/transactions/0x${clean}`;
+  const domain = network === 'preview' ? 'preview.midnightexplorer.com' : 'preprod.midnightexplorer.com';
+  return `https://${domain}/transactions/${clean}`;
 }
 
-export function get1amTxExplorerUrl(txId: string): string {
+export function get1amTxExplorerUrl(txId: string, network: NetworkId = 'preprod'): string {
   const clean = txId.replace(/^0x/i, '').trim();
-  return `https://explorer.1am.xyz/tx/${clean}`;
+  const netQuery = network === 'preview' ? '?network=preview' : '?network=preprod';
+  return `https://explorer.1am.xyz/tx/${clean}${netQuery}`;
 }
+
+export function getMidnightBlockExplorerUrl(blockHeight: number, network: NetworkId = 'preprod'): string {
+  const domain = network === 'preview' ? 'preview.midnightexplorer.com' : 'preprod.midnightexplorer.com';
+  return `https://${domain}/blocks/${blockHeight}`;
+}
+
+export function get1amBlockExplorerUrl(blockHeight: number, network: NetworkId = 'preprod'): string {
+  const netQuery = network === 'preview' ? '?network=preview' : '?network=preprod';
+  return `https://explorer.1am.xyz/block/${blockHeight}${netQuery}`;
+}
+
