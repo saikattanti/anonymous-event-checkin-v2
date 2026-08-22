@@ -1,14 +1,23 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  CheckCircle2,
+  Copy,
+  Check,
+  ExternalLink,
+  Rocket,
+  Layers,
+  Globe,
+} from 'lucide-react';
 import { PageHeader, Surface, Badge } from '@/components/ui/surface';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWallet } from '@/wallet-context';
 import { loadConfig, networkLabel } from '@/config';
-import { shortAddr } from '@/lib/utils';
-import { clearActivity, pushActivity } from '@/lib/activity';
 import { LACE_STORE_URL } from '@/lace';
 
 export function SettingsPage() {
+  const navigate = useNavigate();
   const {
     config,
     wallet,
@@ -27,6 +36,13 @@ export function SettingsPage() {
 
   const [addressDraft, setAddressDraft] = useState(config.contractAddress ?? '');
   const [eventName, setEventName] = useState('Anonymous Event Check-in');
+  const [copiedActive, setCopiedActive] = useState(false);
+  const [copiedDeployed, setCopiedDeployed] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [deployedModal, setDeployedModal] = useState<{
+    address: string;
+    eventName: string;
+  } | null>(null);
 
   useEffect(() => {
     setAddressDraft(config.contractAddress ?? '');
@@ -34,63 +50,134 @@ export function SettingsPage() {
 
   const onSaveContract = (e: FormEvent) => {
     e.preventDefault();
-    setContractAddress(addressDraft);
+    if (!addressDraft.trim()) return;
+    setContractAddress(addressDraft.trim());
     void refreshPublicState();
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2500);
   };
 
   const onDeploy = async () => {
-    const address = await deploy(eventName.trim() || undefined);
-    if (address) setAddressDraft(address);
+    const name = eventName.trim() || 'Anonymous Event Check-in';
+    const address = await deploy(name);
+    if (address) {
+      setAddressDraft(address);
+      setDeployedModal({
+        address,
+        eventName: name,
+      });
+      void refreshPublicState();
+    }
   };
+
+  const copyToClipboard = async (text: string, isDeployed: boolean) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (isDeployed) {
+        setCopiedDeployed(true);
+        setTimeout(() => setCopiedDeployed(false), 2000);
+      } else {
+        setCopiedActive(true);
+        setTimeout(() => setCopiedActive(false), 2000);
+      }
+    } catch {
+      // Fallback
+    }
+  };
+
+  const getExplorerUrl = (address: string) => {
+    const clean = address.replace(/^0x/i, '');
+    if (config.network === 'preview') {
+      return `https://preview.midnightexplorer.com/contracts/0x${clean}`;
+    }
+    return `https://preprod.midnightexplorer.com/contracts/0x${clean}`;
+  };
+
+  const isSaveDisabled =
+    !addressDraft.trim() || addressDraft.trim() === (config.contractAddress ?? '').trim();
 
   return (
     <div>
       <PageHeader
         kicker="Config"
         title="Workspace setup"
-        description="Deploy with 1AM on Preview, paste an address, or tune network endpoints."
+        description={`Deploy on ${networkLabel(config.network)}, manage contract address, and inspect network endpoints.`}
       />
 
       <div className="grid gap-3 lg:grid-cols-2">
+        {/* Deploy Card */}
         <Surface accent>
-          <h2 className="font-display text-2xl">Deploy event contract</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 font-display text-2xl">
+              <Rocket className="h-5 w-5 text-[var(--accent)]" />
+              Deploy event contract
+            </h2>
+            <Badge tone="ok">{networkLabel(config.network)}</Badge>
+          </div>
           <p className="mt-2 text-sm text-[var(--ink-muted)]">
-            Prefer <strong>1AM</strong> on <strong>Preview</strong> (sponsored DUST). Unlock, wait
-            until synced, then Deploy once. ZK proving often takes 2–5+ minutes — approve the wallet
-            popup; do not click Deploy again.
+            Deploys a fresh <strong>{networkLabel(config.network)}</strong> contract instance. ZK
+            proving takes ~30–60 seconds. Approve the wallet popup when prompted.
           </p>
           <div className="mt-5 space-y-3">
-            <Input
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
-              placeholder="Public event name"
-              spellCheck={false}
-            />
+            <div>
+              <label
+                htmlFor="eventName"
+                className="mb-1 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-muted)]"
+              >
+                Public Event Title
+              </label>
+              <Input
+                id="eventName"
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+                placeholder="e.g. Midnight Builder Summit 2026"
+                spellCheck={false}
+                disabled={deploying}
+              />
+            </div>
             <Button
               type="button"
               variant="accent"
+              className="w-full sm:w-auto"
               onClick={() => void onDeploy()}
               disabled={!wallet || deploying}
             >
-              {deploying ? 'Deploying (proving)…' : 'Deploy on Preview'}
+              {deploying
+                ? 'Deploying on-chain (proving)…'
+                : `Deploy on ${networkLabel(config.network)}`}
             </Button>
             {!wallet ? (
-              <p className="text-sm text-[var(--ink-faint)]">Connect a wallet first.</p>
+              <p className="text-sm text-[var(--ink-faint)]">Connect your wallet first to deploy.</p>
             ) : null}
             {deployError ? <p className="text-sm text-[var(--danger)]">{deployError}</p> : null}
             {deploying ? (
-              <p className="text-sm text-[var(--ink-muted)]">
-                Leave this tab open. Approve the 1AM popup when it appears — do not click Deploy
-                again.
-              </p>
+              <div className="flex items-center gap-2 rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-3 text-xs text-[var(--ink-muted)]">
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+                <span>
+                  Generating ZK proof and submitting transaction… Please keep this tab open and
+                  approve in your wallet.
+                </span>
+              </div>
             ) : null}
           </div>
         </Surface>
 
+        {/* Contract Address Card */}
         <Surface>
-          <h2 className="font-display text-2xl">Contract address</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 font-display text-2xl">
+              <Layers className="h-5 w-5 text-[var(--accent)]" />
+              Contract address
+            </h2>
+            {saveSuccess ? (
+              <Badge tone="ok">
+                <Check className="mr-1 inline h-3 w-3" /> Saved!
+              </Badge>
+            ) : null}
+          </div>
           <p className="mt-2 text-sm text-[var(--ink-muted)]">
-            Paste a deployed address (or use Deploy). Stored locally and applied immediately.
+            Paste a deployed address or deploy above. Saved locally and applied immediately across
+            the DApp.
           </p>
           <form onSubmit={onSaveContract} className="mt-5 space-y-3">
             <div>
@@ -98,7 +185,7 @@ export function SettingsPage() {
                 htmlFor="contract"
                 className="mb-1 block font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--ink-muted)]"
               >
-                Deployed address
+                Contract Address (64-char Hex)
               </label>
               <Input
                 id="contract"
@@ -109,75 +196,125 @@ export function SettingsPage() {
                 autoComplete="off"
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit" variant="accent">
-                Save
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="submit" variant="accent" disabled={isSaveDisabled}>
+                {saveSuccess ? 'Saved!' : 'Save Address'}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => {
                   clearContractAddressOverride();
-                  setAddressDraft(loadConfig().contractAddress ?? '');
+                  const def = loadConfig().contractAddress ?? '';
+                  setAddressDraft(def);
                 }}
               >
-                Reset
+                Reset to Default
               </Button>
             </div>
           </form>
-          <p className="mt-4 break-all font-mono text-[11px] text-[var(--ink-faint)]">
-            Active: {config.contractAddress ?? 'not set'}
-          </p>
+
+          {config.contractAddress ? (
+            <div className="mt-4 rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-3">
+              <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--ink-muted)]">
+                <span>ACTIVE DEPLOYMENT</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(config.contractAddress!, false)}
+                    className="flex items-center gap-1 text-[var(--accent)] hover:underline"
+                  >
+                    {copiedActive ? (
+                      <>
+                        <Check className="h-3 w-3" /> Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" /> Copy
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={getExplorerUrl(config.contractAddress)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 text-[var(--ink-muted)] hover:text-white"
+                  >
+                    <ExternalLink className="h-3 w-3" /> Explorer
+                  </a>
+                </div>
+              </div>
+              <p className="mt-1.5 break-all font-mono text-xs text-white">
+                {config.contractAddress}
+              </p>
+            </div>
+          ) : (
+            <p className="mt-4 font-mono text-[11px] text-[var(--danger)]">
+              No contract address configured.
+            </p>
+          )}
         </Surface>
 
+        {/* Environment Endpoints */}
         <Surface>
-          <h2 className="font-display text-2xl">Environment</h2>
+          <h2 className="flex items-center gap-2 font-display text-2xl">
+            <Globe className="h-5 w-5 text-[var(--accent)]" />
+            Environment
+          </h2>
           <dl className="mt-5 space-y-4 text-sm">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--line)] pb-3">
               <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
                 Network
               </dt>
-              <dd className="text-right font-semibold">{networkLabel(config.network)}</dd>
+              <dd className="font-semibold text-white">{networkLabel(config.network)}</dd>
             </div>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--line)] pb-3">
               <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
-                Indexer
+                GraphQL Indexer
               </dt>
-              <dd className="max-w-[60%] break-all text-right font-mono text-xs">
+              <dd className="max-w-[65%] break-all text-right font-mono text-xs text-[var(--ink-muted)]">
                 {config.indexerUri ?? wallet?.uris.indexerUri ?? '—'}
               </dd>
             </div>
             <div className="flex items-start justify-between gap-4">
               <dt className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--ink-faint)]">
-                Prover
+                Proof Server
               </dt>
-              <dd className="max-w-[60%] break-all text-right font-mono text-xs">
+              <dd className="max-w-[65%] break-all text-right font-mono text-xs text-[var(--ink-muted)]">
                 {config.proverUri ?? wallet?.uris.proverServerUri ?? '—'}
               </dd>
             </div>
           </dl>
         </Surface>
 
+        {/* Wallet Connection */}
         <Surface>
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-display text-2xl">Midnight wallet</h2>
             <Badge tone={wallet ? 'ok' : laceInstalled ? 'warn' : 'danger'}>
-              {wallet ? 'Live' : laceInstalled ? 'Detected' : 'Missing'}
+              {wallet ? 'Connected' : laceInstalled ? 'Detected' : 'Not Found'}
             </Badge>
           </div>
           <p className="mt-3 text-sm text-[var(--ink-muted)]">
-            Prefers <strong>1AM</strong> when both wallets are installed. Set network to{' '}
-            <strong>Preview</strong> to match the app.
+            Connect using <strong>1AM</strong> or <strong>Lace</strong> wallet on Midnight{' '}
+            <strong>{networkLabel(config.network)}</strong>.
           </p>
           {wallet ? (
             <div className="mt-5 space-y-3">
-              <p className="break-all font-mono text-xs">{shortAddr(wallet.state.address, 18, 10)}</p>
+              <div className="rounded-md border border-[var(--line)] bg-[var(--surface-muted)] p-3">
+                <span className="text-[10px] font-semibold text-[var(--ink-muted)] uppercase">
+                  Shielded Address
+                </span>
+                <p className="mt-1 break-all font-mono text-xs text-white">
+                  {wallet.state.address}
+                </p>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={disconnect}>
-                  Disconnect
+                  Disconnect Wallet
                 </Button>
                 <Button variant="ghost" onClick={() => void refreshPublicState()}>
-                  Sync ledger
+                  Sync Ledger
                 </Button>
               </div>
             </div>
@@ -194,31 +331,85 @@ export function SettingsPage() {
                   rel="noreferrer"
                   className="inline-flex h-10 items-center rounded-[var(--radius)] bg-[var(--accent)] px-4 text-sm font-semibold text-white hover:bg-[var(--accent-deep)]"
                 >
-                  Install Lace
+                  Install 1AM / Lace
                 </a>
               )}
             </div>
           )}
           {walletError ? <p className="mt-3 text-sm text-[var(--danger)]">{walletError}</p> : null}
         </Surface>
-
-        <Surface>
-          <h2 className="font-display text-2xl">Local data</h2>
-          <p className="mt-2 text-sm text-[var(--ink-muted)]">
-            Activity log lives in this browser only.
-          </p>
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={() => {
-              clearActivity();
-              pushActivity('settings_update', 'Activity log cleared from config');
-            }}
-          >
-            Clear activity log
-          </Button>
-        </Surface>
       </div>
+
+      {/* Deployment Success Confirmation Modal */}
+      {deployedModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="relative w-full max-w-lg rounded-xl border border-[var(--accent)]/50 bg-[var(--surface)] p-6 shadow-2xl">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                <CheckCircle2 className="h-7 w-7" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-2xl text-white">Contract Deployed!</h3>
+                  <Badge tone="ok">Preprod</Badge>
+                </div>
+                <p className="mt-1 text-sm text-[var(--ink-muted)]">
+                  Your smart contract for{' '}
+                  <strong className="text-white">"{deployedModal.eventName}"</strong> has been
+                  finalized on Midnight Preprod.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3 rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] p-4">
+              <div className="flex items-center justify-between text-xs font-semibold text-[var(--ink-muted)]">
+                <span>NEW CONTRACT ADDRESS</span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(deployedModal.address, true)}
+                  className="flex items-center gap-1 text-[var(--accent)] hover:underline"
+                >
+                  {copiedDeployed ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" /> Copy Address
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="break-all font-mono text-xs font-medium text-white">
+                {deployedModal.address}
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <a
+                href={getExplorerUrl(deployedModal.address)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--line)]"
+              >
+                <ExternalLink className="h-4 w-4" /> View on Midnight Explorer
+              </a>
+              <Button
+                variant="accent"
+                onClick={() => {
+                  setDeployedModal(null);
+                  navigate('/dashboard');
+                }}
+              >
+                Open Dashboard
+              </Button>
+              <Button variant="ghost" onClick={() => setDeployedModal(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
