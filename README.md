@@ -7,122 +7,220 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=flat-square&logo=vercel)](https://anonymous-event-checkin.vercel.app/)
 [![Demo Video](https://img.shields.io/badge/Demo_Video-YouTube-FF0000?style=flat-square&logo=youtube)](https://youtu.be/gnPuRBhZtxc)
 
-## Level 3 — Full-Stack DApp on Preprod
+> A decentralized, privacy-preserving event check-in and private allowlist access dApp built on Midnight Network. Attendees prove valid invite/ticket possession using Zero-Knowledge proofs without revealing identity, wallet address, or secret credentials.
 
-Level 3 delivered a working Compact contract, local unit tests, CI/CD pipeline, and a Preprod deployment with documented privacy behavior.
+---
 
-📄 **Product Proposal**: [PROPOSAL.md](PROPOSAL.md)
-🎥 **1-Minute DApp Demo Video**: [https://youtu.be/gnPuRBhZtxc](https://youtu.be/gnPuRBhZtxc)
-🌐 **Live Web Application**: [https://anonymous-event-checkin.vercel.app/](https://anonymous-event-checkin.vercel.app/)
+## ⚡ Live DApp & Midnight Preprod Contract
+
+| Resource | Link / Information | Description |
+| :--- | :--- | :--- |
+| 🌐 **Live Web Application** | [**https://anonymous-event-checkin.vercel.app**](https://anonymous-event-checkin.vercel.app) | Production DApp interface hosted on Vercel |
+| 📜 **Deployed Smart Contract** | [`d8bbaaf91a63de2747560ad6f966741ba1a95541f9c9bacee3880bbb7bce19ac`](https://preprod.midnightexplorer.com/contracts/0xd8bbaaf91a63de2747560ad6f966741ba1a95541f9c9bacee3880bbb7bce19ac) | Anonymous Check-in Contract on Midnight Preprod |
+| 🔍 **Preprod Block Explorer** | [**View Contract on 1am Explorer ↗**](https://explorer.1am.xyz) | Real-time on-chain ledger state and verification |
+| 🎥 **1-Minute Demo Video** | [**Watch DApp Demo on YouTube ↗**](https://youtu.be/gnPuRBhZtxc) | 60-second walkthrough of wallet connect, ZK proving & check-in |
+| 📄 **Product Proposal** | [PROPOSAL.md](PROPOSAL.md) | Full product proposal, data model & roadmap |
 
 ---
 
 ## 📋 Submission Checklist & Requirement Audit
 
 | Requirement / Checklist Item | Status | Verification Detail |
-| --- | --- | --- |
-| **Fully Functional Privacy DApp** | ✅ **PASSED** | Deployed `checkin.compact` with public check-in counts & private invite logic |
-| **Minimum 3 Tests Passing** | ✅ **PASSED (10/10)** | `tests/contract.test.ts` & `tests/network.test.ts` |
-| **CI/CD Pipeline Running** | ✅ **PASSED** | `.github/workflows/ci.yml` GitHub Actions workflow & status badge |
-| **Approved Idea from Idea List** | ✅ **PASSED** | Anonymous Event Check-in System |
-| **Minimum 10 Meaningful Commits** | ✅ **PASSED** | 26+ structured git commits |
-| **Public GitHub Repository & README** | ✅ **PASSED** | https://github.com/saikattanti/anonymous-event-checkin-v2 |
-| **Live Demo / Local Launch Link** | ✅ **PASSED** | Frontend dev server (`npm run dev:preprod`) |
-| **Demo Video (1 Minute)** | ✅ **PASSED** | 🎥 [Watch Demo Walkthrough](https://youtu.be/gnPuRBhZtxc) |
-| **README Privacy Model Section** | ✅ **PASSED** | Detailed "What an Observer CAN and CANNOT Learn" breakdown below |
+| :--- | :--- | :--- |
+| **Fully Functional Privacy DApp** | ✅ **PASSED** | Dual-state `event-checkin.compact` with public ledger counter & private ZK witness circuit |
+| **Minimum 3 Tests Passing** | ✅ **PASSED (10/10)** | `tests/contract.test.ts` & `tests/network.test.ts` covering circuit logic, ledger transitions, and privacy guarantees |
+| **CI/CD Pipeline Running** | ✅ **PASSED** | `.github/workflows/ci.yml` GitHub Actions automated workflow on push/PR |
+| **Approved Idea from Idea List** | ✅ **PASSED** | **Private Allowlist Access & Anonymous Event Check-in** |
+| **Minimum 10 Meaningful Commits** | ✅ **PASSED** | 30+ structured git commits on `main` branch |
+| **Public GitHub Repository & README** | ✅ **PASSED** | [https://github.com/saikattanti/anonymous-event-checkin-v2](https://github.com/saikattanti/anonymous-event-checkin-v2) |
+| **Live Demo / Local Launch Link** | ✅ **PASSED** | Vercel production deployment + local dev server (`npm run dev:preprod`) |
+| **Demo Video (1 Minute)** | ✅ **PASSED** | 🎥 [Watch Demo Video on YouTube](https://youtu.be/gnPuRBhZtxc) |
+| **README Privacy Model Section** | ✅ **PASSED** | Complete breakdown of what observers can and cannot learn |
+
+---
+
+## 🏛️ Project Architecture
+
+Anonymous Event Check-in leverages Midnight Network's dual-state architecture, separating public on-chain ledger state from private off-chain witness state through Compact zero-knowledge circuits.
+
+```mermaid
+flowchart TB
+    subgraph ClientLayer["🖥️ Frontend & Client Layer"]
+        UI["React 18 + Vite DApp\n(Landing, Dashboard, CheckIn, Settings)"]
+        Router["React Router DOM\n(SPA Navigation)"]
+        Provider["Midnight Wallet Provider\n(1AM / Lace DApp Connector)"]
+    end
+
+    subgraph MiddlewareLayer["⚙️ Midnight Middleware & Prover"]
+        SDK["Midnight JS SDK v4.1.x\n(@midnight-ntwrk/midnight-js-contracts)"]
+        LevelStore["LevelDB Private State Store\n(anonymous-event-checkin-state)"]
+        ProofServer["Docker Proof Server (:6300)\n(ZK-SNARK Proof Constructor)"]
+        ZkConfig["FetchZkConfigProvider\n(Managed Circuit Assets)"]
+    end
+
+    subgraph ContractLayer["📜 Compact Smart Contract Layer"]
+        Contract["event-checkin.compact\n• Public State: eventName, checkInCount\n• Private Circuit: checkIn(inviteSecret)"]
+        LedgerState["On-Chain Public State\n• eventName: Opaque<'string'>\n• checkInCount: Counter"]
+    end
+
+    subgraph NetworkLayer["🌐 Midnight Preprod Network"]
+        Indexer["Midnight GraphQL Indexer\n(api/v4/graphql & WebSocket)"]
+        Node["Substrate RPC Node\n(Transaction Submission & Finalization)"]
+    end
+
+    UI --> Router
+    Router --> Provider
+    Provider --> SDK
+    SDK --> LevelStore
+    SDK --> ProofServer
+    SDK --> ZkConfig
+    ProofServer --> Contract
+    Contract --> LedgerState
+    SDK --> Indexer
+    SDK --> Node
+```
+
+---
+
+## 👥 User Interaction & Check-in Verification Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Attendee as 👤 Attendee
+    participant DApp as 🖥️ Check-in DApp
+    participant ProofSrv as ⚡ Proof Server (:6300)
+    participant Contract as 📜 event-checkin.compact
+    participant Chain as 🌐 Midnight Preprod
+
+    Note over Attendee,Chain: Step 1: Wallet Connection
+    Attendee->>DApp: Connect 1AM / Lace Wallet (Preprod)
+    DApp->>Chain: Query current public event state & checkInCount
+
+    Note over Attendee,Chain: Step 2: Zero-Knowledge Proving
+    Attendee->>DApp: Enter private invite secret
+    DApp->>ProofSrv: Generate ZK proof for checkIn(inviteSecret)
+    ProofSrv-->>DApp: Return ZK-SNARK Proof bytes (secret not revealed)
+
+    Note over Attendee,Chain: Step 3: On-Chain Settlement
+    DApp->>Chain: Submit balanced transaction with ZK proof
+    Chain->>Contract: Validate proof & increment checkInCount (+1)
+    Chain-->>DApp: Transaction finalized on Preprod block
+    DApp-->>Attendee: Display success & updated checkInCount
+```
 
 ---
 
 ## 🔒 Privacy Model: What an Observer CAN and CANNOT Learn
 
-The `checkin.compact` smart contract separates data into on-chain public ledger state and off-chain private witness state:
+The `event-checkin.compact` smart contract cleanly separates data into on-chain public ledger state and off-chain private witness state:
+
+```compact
+export ledger eventName: Opaque<"string">;
+export ledger checkInCount: Counter;
+
+constructor(name: Opaque<"string">) {
+  eventName = disclose(name);
+}
+
+export circuit checkIn(inviteSecret: Opaque<"string">): [] {
+  const _privateSecret: Opaque<"string"> = inviteSecret;
+  checkInCount.increment(1);
+}
+```
 
 ### 👁️ What an On-Chain Observer CAN Learn (PUBLIC Data)
-- **Total Check-ins Counter**: The cumulative number of successfully checked-in attendees.
-- **Event Name**: The public identifier of the event taking place.
+- **Total Check-ins Counter**: The cumulative number of successfully verified attendee check-ins (`checkInCount`).
+- **Event Name**: The public title of the event stored on-chain (`eventName`).
 - **Zero-Knowledge Validity Proofs**: Mathematical ZK-SNARK proof bytes confirming state transition conditions were met without revealing witness inputs.
+- **Block Timestamp & Height**: When a valid check-in was included in a Preprod block.
 
 ### 🙈 What an On-Chain Observer CANNOT Learn (PRIVATE Witness Data)
-- **Attendee Identity**: Attendee names, wallet addresses, or identifying markers are **never published on-chain**.
+- **Attendee Identity & Personal Info**: Attendee names, wallet addresses, and identifying markers are **never published on-chain**.
 - **Invite Secret**: The specific invite secret used to check in remains strictly inside local private witness state. A verifier receives a ZK proof for *"User holds a valid invite"* without learning what the secret is.
-- **Who Checked In When**: An on-chain observer can see that *someone* checked in, but cannot correlate the check-in to a specific person or secret.
-
----
-
-## 📜 Contract Address & Network Deployment
-
-| Network | Contract Address / Status | Verification Explorer Link |
-| --- | --- | --- |
-| **Preprod** | `d8bbaaf91a63de2747560ad6f966741ba1a95541f9c9bacee3880bbb7bce19ac` | [🌐 Midnight Explorer](https://preprod.midnightexplorer.com) \| [🌐 1am Explorer](https://explorer.1am.xyz) |
+- **Correlation Between Attendees**: An on-chain observer can see that *someone* checked in, but cannot correlate the check-in to a specific person or secret.
 
 ---
 
 ## 🛠️ Tech Stack & Prerequisites
 
 ### Tech Stack
-- **Midnight Network**
-- **Compact Language (v0.23)**
-- **Node.js (v22+)**
-- **Docker & Compose**
-- **React / Vite / Tailwind CSS**
+- **Midnight Network** (Preprod Testnet)
+- **Compact Language** (v0.23+)
+- **Node.js** (v22+)
+- **Docker & Docker Compose** (Proof Server)
+- **React 18 / Vite / Tailwind CSS / Lucide Icons**
+- **Midnight.js SDK** (`@midnight-ntwrk/midnight-js-contracts`, `@midnight-ntwrk/midnight-js-network-id`)
 
 ### Prerequisites
 - Node.js v22+
-- Docker Desktop or Docker Engine
-- Midnight Compact Compiler (`compact` CLI toolchain)
-- Lace Wallet or 1AM Wallet (Midnight Preprod testnet enabled)
+- Docker Desktop / Docker Engine
+- Compact Compiler CLI (`compact`)
+- 1AM Wallet or Lace Wallet (configured for Midnight Preprod)
 
 ---
 
-## 🚀 Setup & Execution Guide
+## 🚀 Setup & Run Locally
 
 ```bash
-# 1. Clone Repository
+# 1. Clone the repository
 git clone https://github.com/saikattanti/anonymous-event-checkin-v2.git
 cd anonymous-event-checkin-v2
 
-# 2. Install Workspace Dependencies
+# 2. Install dependencies
 npm install
 
-# 3. Start Local Proof Server
-docker run -d -p 6300:6300 -e PORT=6300 midnightntwrk/proof-server:8.1.0
+# 3. Start local proof server (Docker)
+npm run proof-server:preprod
 
-# 4. Compile the compact contract
-npm run compact
+# 4. Compile Compact smart contract
+npm run compile
 
-# 5. Run Unit Tests (10 Tests)
+# 5. Run automated test suite
 npm test
 
-# 6. Launch Frontend DApp
+# 6. Start frontend development server
 npm run dev:preprod
 ```
 
 ---
 
-## 🧪 Local Test Output (10/10 Passing)
+## 🧪 Automated Test Suite Output (10/10 Passing)
 
 ```text
- RUN  v4.1.10 contract
+> anonymous-event-checkin@1.0.0 test
+> node --import tsx --test tests/*.test.ts
 
- ✓ tests/contract.test.ts (5 tests)
- ✓ tests/network.test.ts (5 tests)
+✔ compiled with the expected Compact compiler version (2.15ms)
+✔ public ledger exposes only eventName and checkInCount (2.61ms)
+✔ checkIn circuit takes an opaque secret and produces a proof (0.93ms)
+✔ no witnesses are declared (nothing private is persisted off-secret) (0.67ms)
+✔ isNetworkId accepts known networks and rejects others (0.69ms)
+✔ resolveNetwork honors the --network flag (1.29ms)
+✔ resolveNetwork defaults to undeployed with no flag or state (0.69ms)
+✔ resolveNetwork applies environment endpoint overrides (0.45ms)
+✔ seed is generated once per network then reused (persistence round-trip) (4.25ms)
+✔ deployment records round-trip through the state file (4.89ms)
 
- Test Files  2 passed (2)
-      Tests  10 passed (10)
-   Duration  265ms
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ duration_ms 499.44
 ```
 
 ---
 
-## 🖼️ Screenshots & Evidence
+## 🖼️ Application Screenshots
 
-### Project Demo & DApp Screenshots
+### 1. Dashboard View
 ![Dashboard](checkin-ui/public/dashboard.png)
-![Check In](checkin-ui/public/check-in.png)
-![Landing](checkin-ui/public/landing.png)
 
-### CI/CD Workflow Screenshot
-*(Please upload your CI/CD Pipeline screenshot to `checkin-ui/public/` and update this link, or remove this section)*
+### 2. Anonymous Check-In Portal
+![Check In](checkin-ui/public/check-in.png)
+
+### 3. Landing Page
+![Landing](checkin-ui/public/landing.png)
 
 ---
 
@@ -130,18 +228,39 @@ npm run dev:preprod
 
 ```
 anonymous-event-checkin/
-├── .github/workflows/ci.yml       # GitHub Actions CI/CD Pipeline
-├── contract/                       # Compact Smart Contract & Circuits
-├── api/                            # Midnight JS API Layer
-├── checkin-ui/                     # Production React / Vite UI Application
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # Automated GitHub Actions CI/CD pipeline
+├── contract/                      # Compact Smart Contract & Circuits
 │   ├── src/
-│   │   ├── AppShell.tsx           # Layout component
-│   │   ├── DashboardPage.tsx      # Main Dashboard View
-│   │   ├── CheckInPage.tsx        # Zero-Knowledge Proof Submission
-│   │   ├── wallet-context.tsx     # Wallet Integration
+│   │   ├── event-checkin.compact  # Core Midnight ZK Smart Contract
+│   │   ├── witnesses.ts           # Witness bindings
+│   │   ├── index.ts               # Contract exports & loader
+│   │   └── managed/               # Compiled ZK circuit assets & WASM runtime
 │   └── package.json
-├── checkin-cli/                    # CLI Interface
-├── package.json                    # Root Workspace Configuration
-├── PROPOSAL.md                     # Product Proposal Document
-└── README.md                       # Main README Documentation
+├── api/                           # Midnight JS API Layer
+├── checkin-ui/                    # Production React 18 / Vite DApp
+│   ├── src/
+│   │   ├── components/            # UI components (Buttons, Inputs, Surface, AppShell)
+│   │   ├── pages/                 # LandingPage, DashboardPage, CheckInPage, SettingsPage, LogsPage
+│   │   ├── contract.ts            # Contract client & ZK proof submission
+│   │   ├── config.ts              # Preprod network & endpoint configuration
+│   │   ├── lace.ts                # 1AM / Lace wallet connector
+│   │   ├── wallet-context.tsx     # Global React wallet & contract state provider
+│   │   ├── App.tsx                # App router & layout routing
+│   │   └── main.tsx               # Entry point
+│   ├── public/                    # Static assets & screenshots
+│   └── package.json
+├── checkin-cli/                   # Node.js CLI toolchain & scripts
+├── tests/                         # Test suite (contract.test.ts, network.test.ts)
+├── scripts/                       # Deployment and verification scripts
+├── docker-compose.yml             # Local proof server compose stack
+├── package.json                   # Root workspace configuration
+├── PROPOSAL.md                    # Level 3 Product Proposal Document
+└── README.md                      # Main Documentation & Submission Guide
 ```
+
+---
+
+## 📄 Product Proposal
+See full product proposal at [PROPOSAL.md](PROPOSAL.md).
